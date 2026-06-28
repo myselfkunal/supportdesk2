@@ -1,36 +1,77 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# SupportDesk
 
-## Getting Started
+AI-powered customer query manager for merchants and small business teams. Built with Next.js 16, SQLite, and Groq AI.
 
-First, run the development server:
+## Features
+
+- **Compose** — Paste customer messages, get AI-powered classification (category, priority, sentiment) and a reply draft
+- **Inbox** — Browse all saved queries with expandable details and delete capability
+- **Analytics** — KPI cards, category bar chart, priority and sentiment breakdowns
+
+## Tech Stack
+
+- **[Next.js 16](https://nextjs.org/)** (App Router, TypeScript)
+- **Tailwind CSS** — dark theme UI
+- **SQLite** via `@libsql/client` — zero-config, file-based database
+- **Groq SDK** — AI classification and reply generation (`llama-3.1-8b-instant`)
+- **Lucide React** — icons
+
+## Setup
+
+```bash
+git clone <repo>
+cd xatpat-support-2
+npm install
+cp .env.local.example .env.local
+```
+
+Add your Groq API key to `.env.local`:
+
+```
+GROQ_API_KEY=your_groq_api_key_here
+```
+
+Get a free key at [console.groq.com](https://console.groq.com).
+
+## Run
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## How It Works
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- No Docker, no migrations, no external database required.
+- The SQLite database file (`data/support.db`) is created automatically on the first API call.
+- AI calls have keyword-based fallbacks — the app never crashes if Groq is down or the API key is missing.
+- Dynamic route params use `await context.params` (Next.js 16 convention).
 
-## Learn More
+## Project Structure
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```
+app/
+├── api/
+│   ├── analyze/route.ts       # POST — classify & generate reply
+│   └── queries/
+│       ├── route.ts            # GET/POST — list & create queries
+│       └── [id]/route.ts       # PATCH/DELETE — update & delete
+├── components/
+│   ├── Header.tsx              # Sticky nav tabs
+│   ├── ComposeTab.tsx          # Message input, analysis, reply editor
+│   ├── InboxTab.tsx            # Saved queries list
+│   ├── AnalyticsTab.tsx        # KPIs & charts
+│   ├── ClassificationCards.tsx # Category/priority/sentiment badges
+│   ├── Badge.tsx               # Reusable colored pill
+│   ├── QueryRow.tsx            # Expandable inbox row
+│   └── Toast.tsx               # Green notification
+├── layout.tsx
+├── page.tsx                    # Tab router
+├── globals.css
+lib/
+├── types.ts                    # Shared interfaces
+├── db.ts                       # SQLite singleton & CRUD
+└── ai.ts                       # Groq AI + fallback heuristics
+data/
+└── support.db                  # Auto-created SQLite file
